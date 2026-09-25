@@ -2,10 +2,17 @@ require('dotenv').config();
 const express=require('express'); const path=require('path');
 const {GoogleGenerativeAI}=require('@google/generative-ai');
 const app=express(); app.use(express.json()); app.use(express.static(__dirname));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 const genAI=new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 app.post('/api/ask',async(req,res)=>{try{const {message,motorcycle,maintenance}=req.body;
 const model=genAI.getGenerativeModel({model:process.env.GEMINI_MODEL||'gemini-1.5-flash'});
 const prompt=`You are MotoMate, a practical motorcycle assistant. Answer in Indonesian. Use the supplied data, don't invent facts, and give safe actionable advice. Motorcycle: ${JSON.stringify(motorcycle)}. Maintenance: ${JSON.stringify(maintenance)}. User: ${message}`;
 const result=await model.generateContent(prompt); res.json({reply:result.response.text()});
 }catch(e){console.error(e);res.status(500).json({error:'Gemini request failed'});}});
+
 app.listen(process.env.PORT||3000,()=>console.log('MotoMate running on http://localhost:'+(process.env.PORT||3000)));
