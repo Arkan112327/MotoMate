@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MotoMate - Your everyday motorcycle companion</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Global Header -->
+        <header class="header">
+            <div class="brand">
+                <i class="ph-fill ph-motorcycle brand-icon"></i>
+                <div class="brand-name">MotoMate</div>
+            </div>
+            <button class="settings-btn" aria-label="Settings" onclick="showToast('Menu pengaturan belum tersedia')">
+                <i class="ph ph-user-circle"></i>
+            </button>
+        </header>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 1: BERANDA -->
+        <!-- ========================================================= -->
+        <main id="view-beranda" class="view active">
+            <section class="page-header">
+                <h1 class="page-title" id="greetingText">Selamat malam</h1>
+                <p class="page-subtitle">Pantau motor kamu dengan lebih mudah.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="col">
+                    <!-- Main Motorcycle Card -->
+                    <div class="card motor-card">
+                        <div class="motor-card-content">
+                            <div class="motor-header">
+                                <div>
+                                    <h2 class="motor-name" data-bind="motor-name">Yamaha Vixion</h2>
+                                    <div class="motor-details">
+                                        <span data-bind="motor-year">2019</span>
+                                        <span class="motor-details-separator"></span>
+                                        <span data-bind="motor-mileage">32.480 km</span>
+                                    </div>
+                                </div>
+                                <div class="motor-status" id="motorOverallStatus"><i class="ph-fill ph-check-circle"></i><span>Baik</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="navigateTo('perawatan')">
+                            <i class="ph ph-wrench action-icon"></i>
+                            <span class="action-label">Perawatan</span>
+                        </button>
+                        <button class="action-btn" onclick="scrollToFuel()">
+                            <i class="ph ph-gas-pump action-icon"></i>
+                            <span class="action-label">Bahan Bakar</span>
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('ai')">
+                            <i class="ph ph-warning-circle action-icon"></i>
+                            <span class="action-label">Cek Masalah</span>
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('ai')">
+                            <i class="ph ph-robot action-icon"></i>
+                            <span class="action-label">MotoMate AI</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Promo Card (Beranda) -->
+                    <div class="card" style="border-color: rgba(14, 165, 233, 0.2); background: linear-gradient(180deg, var(--bg-surface) 0%, rgba(14, 165, 233, 0.02) 100%);">
+                        <div class="section-header mb-0">
+                            <div class="section-header-left">
+                                <i class="ph-fill ph-sparkle" style="color: var(--accent-primary)"></i>
+                                <h3 class="section-title">Tanya MotoMate</h3>
+                            </div>
+                        </div>
+                        <p class="section-desc">Ceritakan masalah atau pertanyaan tentang motor kamu.</p>
+                        <form class="ai-input-group row" onsubmit="handleBerandaAISubmit(event)">
+                            <input type="text" class="ai-input" id="aiInputBeranda" placeholder="Apa yang terjadi pada motor kamu?" autocomplete="off">
+                            <button type="submit" class="primary-btn" style="padding: 0 16px;">
+                                <i class="ph-bold ph-paper-plane-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <!-- Status Motor -->
+                    <div class="card">
+                        <h3 class="section-title" style="margin-bottom: 16px;">Status Motor</h3>
+                        <div class="status-list">
+                            <div class="status-item">
+                                <span class="status-label"><i class="ph ph-engine text-tertiary"></i> Mesin</span>
+                                <span class="val-normal" id="status-engine"><i class="ph-bold ph-check"></i> Normal</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label"><i class="ph ph-drop text-tertiary"></i> Oli</span>
+                                <span class="val-normal" id="status-oil"><i class="ph-bold ph-check"></i> Normal</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label"><i class="ph ph-circle-notch text-tertiary"></i> Ban</span>
+                                <span class="val-normal" id="status-tire"><i class="ph-bold ph-check"></i> Normal</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label"><i class="ph ph-disc text-tertiary"></i> Rem</span>
+                                <span class="val-normal" id="status-brake"><i class="ph-bold ph-check"></i> Normal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fuel Summary -->
+                    <div class="card" id="fuel-section">
+                        <h3 class="section-title">Bahan Bakar</h3>
+                        <p class="section-desc mb-0">Bulan ini</p>
+                        <div class="fuel-amount" id="fuelMonthlyCost">Menghitung...</div>
+                        <div class="fuel-est" id="fuelEstimateText">Kapasitas tangki: --</div>
+                        <div class="fuel-subtext" id="fuelDetailsText"></div>
+                    </div>
+
+                    <!-- Maintenance Summary -->
+                    <div class="card">
+                        <div class="section-header">
+                            <h3 class="section-title">Perawatan Berikutnya</h3>
+                        </div>
+                        <div class="maintenance-list" id="beranda-maintenance-list">
+                            <!-- Dynamic Content Rendered Here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 2: PERAWATAN -->
+        <!-- ========================================================= -->
+        <main id="view-perawatan" class="view">
+            <section class="page-header">
+                <h1 class="page-title">Perawatan</h1>
+                <p class="page-subtitle">Pantau jadwal perawatan berdasarkan riwayat motor kamu.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="col">
+                    <div class="card motor-card" style="padding: 16px 20px;">
+                        <div class="motor-card-content" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="motor-details">
+                                <strong style="color: white; font-size: 16px;" data-bind="motor-name">Yamaha Vixion</strong>
+                                <span class="motor-details-separator"></span>
+                                <span data-bind="motor-mileage">32.480 km</span>
+                            </div>
+                            <button class="outline-btn" style="padding: 6px 12px; font-size: 12px; border-color: rgba(255,255,255,0.2); color: white;" onclick="openUpdateMileageModal()">
+                                Perbarui
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="section-header" style="margin-bottom: 8px;">
+                            <h3 class="section-title">Daftar Perawatan</h3>
+                            <button class="outline-btn" onclick="openAddMaintenanceModal()" style="padding: 6px 12px; font-size: 12px;">
+                                <i class="ph ph-plus"></i> Tambah
+                            </button>
+                        </div>
+                        <p class="note-text" id="demo-note" style="margin-bottom: 20px;">Data contoh. Interval pada data contoh dapat disesuaikan dengan buku manual dan kondisi penggunaan motor.</p>
+                        
+                        <div class="maintenance-summary-strip" id="maintenanceSummaryStrip"></div>
+                        <div class="maintenance-list" id="main-maintenance-list" style="margin-top: 0;">
+                            <!-- Dynamic Content Rendered Here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 3: MOTOR -->
+        <!-- ========================================================= -->
+        <main id="view-motor" class="view">
+            <section class="page-header">
+                <h1 class="page-title">Motor Saya</h1>
+                <p class="page-subtitle">Informasi kendaraan kamu.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="col">
+                    <div class="card motor-card">
+                        <div class="motor-card-content">
+                            <div class="motor-header mb-0" style="margin-bottom: 0;">
+                                <div>
+                                    <h2 class="motor-name" data-bind="motor-name">Yamaha Vixion</h2>
+                                    <div class="motor-details">
+                                        <span data-bind="motor-year">2019</span>
+                                        <span class="motor-details-separator"></span>
+                                        <span data-bind="motor-mileage">32.480 km</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="section-header" style="margin-bottom: 24px;">
+                            <h3 class="section-title">Spesifikasi</h3>
+                            <button class="outline-btn" onclick="openEditModal()" style="padding: 6px 12px; font-size: 12px;">
+                                <i class="ph ph-pencil-simple"></i> Edit
+                            </button>
+                        </div>
+                        
+                        <div class="status-list">
+                            <div class="status-item">
+                                <span class="status-label">Jenis</span>
+                                <span class="spec-value" data-bind="motor-type">Sport</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Kapasitas Mesin</span>
+                                <span class="spec-value" data-bind="motor-engineCapacity">150 cc</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Sistem Bahan Bakar</span>
+                                <span class="spec-value" data-bind="motor-fuelSystem">Injeksi</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Transmisi</span>
+                                <span class="spec-value" data-bind="motor-transmission">Manual</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Pendinginan</span>
+                                <span class="spec-value" data-bind="motor-coolingSystem">Liquid Cooled</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Penggunaan</span>
+                                <span class="spec-value" data-bind="motor-usage">Harian</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 4: AI -->
+        <!-- ========================================================= -->
+        <main id="view-ai" class="view">
+            <section class="page-header">
+                <h1 class="page-title">MotoMate AI</h1>
+                <p class="page-subtitle">Asisten untuk pertanyaan dan masalah motor kamu.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="col">
+                    <div class="card" style="border-color: rgba(14, 165, 233, 0.3); box-shadow: var(--shadow-glow);">
+                        <div style="text-align: center; padding: 24px 0;">
+                            <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--accent-glow); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px auto;">
+                                <i class="ph-fill ph-robot"></i>
+                            </div>
+                            <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Bagaimana saya bisa membantu?</h2>
+                            <p style="color: var(--text-secondary); font-size: 14px; max-width: 280px; margin: 0 auto;">Ceritakan masalah, gejala, atau pertanyaan tentang motor kamu.</p>
+                        </div>
+
+                        <div class="ai-chat-card-inner">
+                            <div class="ai-chat-toolbar"><span class="chat-history-label"><i class="ph ph-chat-circle-text"></i> Riwayat percakapan</span><button class="outline-btn" type="button" onclick="clearChatHistory()"><i class="ph ph-trash"></i> Hapus</button></div>
+                            <div id="aiChatMessages" class="ai-chat-messages"></div>
+                            <form class="ai-composer" onsubmit="triggerAI(event)">
+                                <textarea class="ai-input" rows="2" placeholder="Tulis pertanyaan lanjutan..." id="mainAiInput"></textarea>
+                                <button class="primary-btn" type="submit"><i class="ph-bold ph-paper-plane-right"></i><span>Kirim</span></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-container">
+            <button class="nav-item active" data-target="beranda" onclick="navigateTo('beranda')">
+                <i class="ph-fill ph-house nav-icon"></i>
+                <span>Beranda</span>
+            </button>
+            <button class="nav-item" data-target="perawatan" onclick="navigateTo('perawatan')">
+                <i class="ph ph-wrench nav-icon"></i>
+                <span>Perawatan</span>
+            </button>
+            <button class="nav-item" data-target="motor" onclick="navigateTo('motor')">
+                <i class="ph ph-motorcycle nav-icon"></i>
+                <span>Motor</span>
+            </button>
+            <button class="nav-item" data-target="ai" onclick="navigateTo('ai')">
+                <i class="ph ph-sparkle nav-icon"></i>
+                <span>AI</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Global Toast Notification -->
+    <div class="toast-container" id="toast">
+        <i class="ph-fill ph-info toast-icon"></i>
+        <span id="toastMessage">Pesan informasi</span>
+    </div>
+
+    <!-- Edit Motor Modal -->
+    <div class="modal-backdrop" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Data Motor</h3>
+                <button class="close-btn" type="button" onclick="closeModal('editModal')"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="editMotorForm" onsubmit="saveMotorData(event)">
+                <div class="form-group">
+                    <label class="form-label">Nama Motor</label>
+                    <input type="text" id="edit-name" class="ai-input" autocomplete="off">
+                    <span class="form-error">Wajib diisi</span>
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Tahun</label>
+                        <input type="number" id="edit-year" class="ai-input" min="1990" max="2100">
+                        <span class="form-error">Tidak valid</span>
+                    </div>
+                    <div>
+                        <label class="form-label">Kilometer</label>
+                        <input type="number" id="edit-mileage" class="ai-input" min="0">
+                        <span class="form-error">Tidak valid</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jenis Motor</label>
+                    <select id="edit-type" class="ai-input">
+                        <option value="Matic">Matic</option>
+                        <option value="Bebek">Bebek</option>
+                        <option value="Sport">Sport</option>
+                        <option value="Naked">Naked</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                    <span class="form-error">Wajib dipilih</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kapasitas Mesin</label>
+                    <input type="text" id="edit-engine" class="ai-input" placeholder="Contoh: 150 cc" autocomplete="off">
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Bahan Bakar</label>
+                        <select id="edit-fuel" class="ai-input">
+                            <option value="Injeksi">Injeksi</option>
+                            <option value="Karburator">Karburator</option>
+                        </select>
+                        <span class="form-error">Wajib dipilih</span>
+                    </div>
+                    <div>
+                        <label class="form-label">Transmisi</label>
+                        <select id="edit-transmission" class="ai-input">
+                            <option value="Automatic">Automatic</option>
+                            <option value="Manual">Manual</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Pendinginan</label>
+                        <select id="edit-cooling" class="ai-input">
+                            <option value="Air Cooled">Air Cooled</option>
+                            <option value="Liquid Cooled">Liquid Cooled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Penggunaan</label>
+                        <select id="edit-usage" class="ai-input">
+                            <option value="Harian">Harian</option>
+                            <option value="Touring">Touring</option>
+                            <option value="Campuran">Campuran</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="outline-btn" onclick="closeModal('editModal')">Batal</button>
+                    <button type="submit" class="primary-btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update Mileage Modal -->
+    <div class="modal-backdrop" id="updateMileageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Perbarui Kilometer</h3>
+                <button class="close-btn" type="button" onclick="closeModal('updateMileageModal')"><i class="ph ph-x"></i></button>
+            </div>
+            <form onsubmit="saveMileageData(event)">
+                <div class="form-group">
+                    <label class="form-label">Kilometer Saat Ini</label>
+                    <input type="number" id="update-mileage-input" class="ai-input" required min="0">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="outline-btn" onclick="closeModal('updateMileageModal')">Batal</button>
+                    <button type="submit" class="primary-btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Maintenance Modal -->
+    <div class="modal-backdrop" id="maintenanceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="maint-modal-title">Tambah Perawatan</h3>
+                <button class="close-btn" type="button" onclick="closeModal('maintenanceModal')"><i class="ph ph-x"></i></button>
+            </div>
+            <form onsubmit="saveMaintenance(event)">
+                <input type="hidden" id="maint-id">
+                <div class="form-group">
+                    <label class="form-label">Jenis perawatan</label>
+                    <select id="maint-type" class="ai-input" required>
+                        <option value="Ganti Oli">Ganti Oli</option>
+                        <option value="Rantai">Rantai</option>
+                        <option value="Ban">Ban</option>
+                        <option value="Rem">Rem</option>
+                        <option value="Busi">Busi</option>
+                        <option value="Filter Udara">Filter Udara</option>
+                        <option value="Coolant">Coolant</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Terakhir dilakukan pada (km)</label>
+                    <input type="number" id="maint-last" class="ai-input" required min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Interval kilometer</label>
+                    <input type="number" id="maint-interval" class="ai-input" required min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Interval waktu (bulan, opsional)</label>
+                    <input type="number" id="maint-months" class="ai-input" min="0" placeholder="Contoh: 3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal terakhir (opsional)</label>
+                    <input type="date" id="maint-date" class="ai-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estimasi biaya (opsional)</label>
+                    <input type="number" id="maint-cost" class="ai-input" min="0" placeholder="Rupiah">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="outline-btn" onclick="closeModal('maintenanceModal')">Batal</button>
+                    <button type="submit" class="primary-btn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
